@@ -2,6 +2,7 @@ import { FiberNode } from './fiber'
 import { HostRoot, HostComponent, HostText } from './workTags'
 import { UpdateQueue, processUpdateQueue } from './updateQueue'
 import { ReactElement } from 'shared/ReactTypes'
+import { reconcileChildFibers, mountChildFibers } from './childFibers'
 // 递归中的递阶段
 export const beginWork = (wip: FiberNode) => {
 	// 根据当前fiber的旧state，以及fiber.updateQueue.shared.pending，生成最新的state，放在memorizedState上
@@ -44,8 +45,17 @@ function updateHostComponent(wip: FiberNode) {
 	return wip.child
 }
 
-// TODO
+/**
+ * 生成子fiber，并构建子fiber与父fiber的关系
+ */
 function reconcileChildren(wip: FiberNode, children?: ReactElement) {
-	// const current = wip.alternate
-	// reconcileChildFibers(wip, current?.child, children)
+	const current = wip.alternate
+
+	if (current !== null) {
+		// update
+		wip.child = reconcileChildFibers(wip, current?.child, children)
+	} else {
+		// mount
+		wip.child = mountChildFibers(wip, null, children)
+	}
 }
