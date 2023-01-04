@@ -52,6 +52,12 @@ function renderRoot(root: FiberRootNode) {
 			workInProgress = null
 		}
 	} while (true)
+
+	const finishedWork = root.current.alternate
+	root.finishedWork = finishedWork
+
+	// TODO
+	// commitRoot(root)
 }
 
 function workLoop() {
