@@ -10,21 +10,22 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
 
 	while (nextEffect !== null) {
 		// 向下遍历
-		const child = nextEffect.child
+		const child: FiberNode | null = nextEffect.child
 
 		if (
 			(nextEffect.subtreeFlags & MutationMask) !== NoFlags &&
 			child !== null
 		) {
-			nextEffect === child
+			nextEffect = child
 		} else {
 			// 向上遍历
 			up: while (nextEffect !== null) {
 				// 看一下本身有没有flags 有就执行
 				commitMutationEffectsOnFiber(nextEffect)
+				const sibling: FiberNode | null = nextEffect.sibling
 
-				if (nextEffect.sibling !== null) {
-					nextEffect = nextEffect.sibling
+				if (sibling !== null) {
+					nextEffect = sibling
 					break up
 				}
 
@@ -48,7 +49,7 @@ const commitMutationEffectsOnFiber = (finishedWork: FiberNode) => {
 
 const commitPlacement = (finishedWork: FiberNode) => {
 	if (__DEV__) {
-		console.warn('执行placement', finishedWork)
+		console.warn('执行Placement操作', finishedWork)
 	}
 
 	// 得到父级DOM节点
@@ -59,14 +60,16 @@ const commitPlacement = (finishedWork: FiberNode) => {
 	}
 }
 
-const getHostParent = (fiber: FiberNode): Container | null => {
+function getHostParent(fiber: FiberNode): Container | null {
 	let parent = fiber.return
 
 	while (parent) {
-		if (parent.tag === HostComponent) {
+		const parentTag = parent.tag
+		// HostComponent HostRoot
+		if (parentTag === HostComponent) {
 			return parent.stateNode as Container
 		}
-		if (parent.tag === HostRoot) {
+		if (parentTag === HostRoot) {
 			return (parent.stateNode as FiberRootNode).container
 		}
 		parent = parent.return

@@ -48,6 +48,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 					if (__DEV__) {
 						console.warn('未实现的reconcile类型', newChild)
 					}
+					break
 			}
 		}
 
@@ -57,6 +58,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 				reconcileSingleTextNode(returnFiber, currentFiber, newChild)
 			)
 		}
+
 		if (__DEV__) {
 			console.warn('未实现的reconcile类型', newChild)
 		}
