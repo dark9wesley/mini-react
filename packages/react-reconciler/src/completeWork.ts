@@ -6,6 +6,7 @@ import {
 	FunctionComponent
 } from './workTags'
 import { NoFlags, Update } from './fiberFlags'
+import { updateFiberProps } from 'react-dom/src/syntheticEvent'
 import {
 	appendInitialChild,
 	createInstance,
@@ -24,7 +25,7 @@ export const completeWork = (wip: FiberNode) => {
 	switch (wip.tag) {
 		case HostComponent:
 			if (current !== null && wip.stateNode) {
-				// update
+				updateFiberProps(wip.stateNode, newProps)
 			} else {
 				// 1.构建DOM
 				const instance = createInstance(wip.type, newProps)
