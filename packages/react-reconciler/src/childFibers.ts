@@ -18,6 +18,20 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 		}
 	}
 
+	function deleteRemainingChildren(
+		returnFiber: FiberNode,
+		currentFirstChild: FiberNode | null
+	) {
+		if (!shouldTrackEffects) {
+			return
+		}
+		let childToDelete = currentFirstChild
+		while (childToDelete !== null) {
+			deleteChild(returnFiber, childToDelete)
+			childToDelete = childToDelete.sibling
+		}
+	}
+
 	function useFiber(fiber: FiberNode, pengdingProps: Props) {
 		const clone = createWorkInProgess(fiber, pengdingProps)
 		clone.index = 0
@@ -31,7 +45,7 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 		element: ReactElement
 	) {
 		const key = element.key
-		work: if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			// update
 			if (currentFiber.key === key) {
 				// key相同
@@ -39,21 +53,23 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 					if (currentFiber.type === element.type) {
 						const existing = useFiber(currentFiber, element.props)
 						existing.return = returnFiber
+						// 当前节点可复用, 将剩余的兄弟节点标记删除
+						deleteRemainingChildren(returnFiber, currentFiber.sibling)
 						return existing
 					}
-					// 删掉旧的
-					deleteChild(returnFiber, currentFiber)
-					break work
+					// key相同，type不同，删掉所有旧的
+					deleteRemainingChildren(returnFiber, currentFiber)
+					break
 				} else {
 					if (__DEV__) {
 						console.warn('还未实现的类型', element)
-						break work
+						break
 					}
 				}
 			} else {
-				// 删掉旧的
+				// key不同, 删掉旧的
 				deleteChild(returnFiber, currentFiber)
-				break work
+				currentFiber = currentFiber.sibling
 			}
 		}
 
@@ -67,14 +83,16 @@ function ChildReconciler(shouldTrackEffects: boolean) {
 		currentFiber: FiberNode | null,
 		content: string | number
 	) {
-		if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			// update
 			if (currentFiber.tag === HostText) {
 				const existing = useFiber(currentFiber, { content })
 				existing.return = returnFiber
+				deleteRemainingChildren(returnFiber, currentFiber.sibling)
 				return existing
 			}
 			deleteChild(returnFiber, currentFiber)
+			currentFiber = currentFiber.sibling
 		}
 
 		const fiber = new FiberNode(HostText, { content }, null)

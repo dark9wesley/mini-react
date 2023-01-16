@@ -242,8 +242,12 @@ describe('ReactElement', () => {
 		// Rudimentary polyfill
 		// Once all jest engines support Symbols natively we can swap this to test
 		// WITH native Symbols by default.
-		const REACT_ELEMENT_TYPE = function () {} // fake Symbol
-		const OTHER_SYMBOL = function () {} // another fake Symbol
+		const REACT_ELEMENT_TYPE = function () {
+			return undefined
+		} // fake Symbol
+		const OTHER_SYMBOL = function () {
+			return undefined
+		} // another fake Symbol
 		global.Symbol = function (name) {
 			return OTHER_SYMBOL
 		}
