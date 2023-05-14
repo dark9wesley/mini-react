@@ -1,2 +1,3 @@
 # mini-react
-学习react相关原理
+
+学习 react 相关原理
