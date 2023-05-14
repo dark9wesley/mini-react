@@ -13,6 +13,7 @@ importers:
       eslint-plugin-prettier: ^4.2.1
       husky: ^8.0.3
       prettier: 2.8.8
+      rollup: ^3.21.7
       typescript: ^5.0.4
     devDependencies:
       '@commitlint/cli': 17.6.3
@@ -24,6 +25,7 @@ importers:
       eslint-plugin-prettier: 4.2.1_mnhdxnhvwtt24ndv5d2pwtkrna
       husky: 8.0.3
       prettier: 2.8.8
+      rollup: 3.21.7
       typescript: 5.0.4
 
 packages:
@@ -1055,6 +1057,14 @@ packages:
     resolution: {integrity: sha1-FQStJSMVjKpA20onh8sBQRmU6k8=}
     dev: true
 
+  /fsevents/2.3.2:
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
   /function-bind/1.1.1:
     resolution: {integrity: sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A==}
     dev: true
@@ -1749,6 +1759,14 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+    dev: true
+
+  /rollup/3.21.7:
+    resolution: {integrity: sha512-KXPaEuR8FfUoK2uHwNjxTmJ18ApyvD6zJpYv9FOJSqLStmt6xOY84l1IjK2dSolQmoXknrhEFRaPRgOPdqCT5w==}
+    engines: {node: '>=14.18.0', npm: '>=8.0.0'}
+    hasBin: true
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /run-parallel/1.2.0:
