@@ -1,4 +1,4 @@
-import { getPackageJSON, resolvePkgPath } from './utils'
+import { getPackageJSON, resolvePkgPath, getBaseRollupPlugins } from './utils'
 
 const { name, module } = getPackageJSON('react')
 // react包路径
@@ -10,9 +10,10 @@ export default [
 	{
 		input: `${pkgPath}/${module}`,
 		output: {
-			file: `${pkgDistPath}/index,js`,
+			file: `${pkgDistPath}/index.js`,
 			name: 'index.js',
 			format: 'umd'
-		}
+		},
+		plugins: getBaseRollupPlugins()
 	}
 ]
