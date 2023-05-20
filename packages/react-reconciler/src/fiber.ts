@@ -1,6 +1,7 @@
 import { Props, Key, ElementType } from 'shared/ReactTypes'
 import { WorkTag } from './workTags'
 import { Ref } from 'shared/ReactTypes'
+import { Flags, NoFlags } from './fiberFlags'
 
 class FiberNode {
 	tag: WorkTag
@@ -15,6 +16,8 @@ class FiberNode {
 
 	pengdingProps: Props
 	memorizeProps: Props | null
+	alternate: FiberNode | null
+	flags: Flags
 	constructor(tag: WorkTag, penddingProps: Props, key: Key) {
 		this.tag = tag
 		this.key = key
@@ -37,5 +40,7 @@ class FiberNode {
 		// 工作单元相关的属性
 		this.pengdingProps = penddingProps
 		this.memorizeProps = null
+		this.alternate = null
+		this.flags = NoFlags
 	}
 }
