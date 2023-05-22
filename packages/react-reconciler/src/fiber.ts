@@ -41,6 +41,7 @@ class FiberNode {
 		this.pengdingProps = penddingProps
 		this.memorizeProps = null
 		this.alternate = null
+		// 副作用
 		this.flags = NoFlags
 	}
 }
