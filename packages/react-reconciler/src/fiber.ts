@@ -3,7 +3,7 @@ import { WorkTag } from './workTags'
 import { Ref } from 'shared/ReactTypes'
 import { Flags, NoFlags } from './fiberFlags'
 
-class FiberNode {
+export class FiberNode {
 	tag: WorkTag
 	key: Key
 	stateNode: null
