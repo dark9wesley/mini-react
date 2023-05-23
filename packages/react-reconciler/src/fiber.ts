@@ -19,6 +19,7 @@ export class FiberNode {
 	memorizeProps: Props | null
 	alternate: FiberNode | null
 	flags: Flags
+	updateQueue: unknown
 	constructor(tag: WorkTag, penddingProps: Props, key: Key) {
 		this.tag = tag
 		this.key = key
@@ -44,6 +45,7 @@ export class FiberNode {
 		this.alternate = null
 		// 副作用
 		this.flags = NoFlags
+		this.updateQueue = null
 	}
 }
 
