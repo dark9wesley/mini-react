@@ -2,11 +2,12 @@ import { Props, Key, ElementType } from 'shared/ReactTypes'
 import { WorkTag } from './workTags'
 import { Ref } from 'shared/ReactTypes'
 import { Flags, NoFlags } from './fiberFlags'
+import { Container } from 'hostConfig'
 
 export class FiberNode {
 	tag: WorkTag
 	key: Key
-	stateNode: null
+	stateNode: any
 	type: ElementType
 	return: FiberNode | null
 	sibling: FiberNode | null
@@ -43,5 +44,18 @@ export class FiberNode {
 		this.alternate = null
 		// 副作用
 		this.flags = NoFlags
+	}
+}
+
+export class FiberRootNode {
+	container: Container
+	current: FiberNode
+	finishedWork: FiberNode | null
+
+	constructor(container: Container, hostRootFiber: FiberNode) {
+		this.container = container
+		this.current = hostRootFiber
+		hostRootFiber.stateNode = this
+		this.finishedWork = null
 	}
 }
