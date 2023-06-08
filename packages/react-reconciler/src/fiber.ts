@@ -17,6 +17,7 @@ export class FiberNode {
 
 	pengdingProps: Props
 	memorizeProps: Props | null
+	memorizeState: any
 	alternate: FiberNode | null
 	flags: Flags
 	updateQueue: unknown
@@ -42,6 +43,7 @@ export class FiberNode {
 		// 工作单元相关的属性
 		this.pengdingProps = penddingProps
 		this.memorizeProps = null
+		this.memorizeState = null
 		this.alternate = null
 		// 副作用
 		this.flags = NoFlags
@@ -60,4 +62,30 @@ export class FiberRootNode {
 		hostRootFiber.stateNode = this
 		this.finishedWork = null
 	}
+}
+
+export const createWorkInProgress = (
+	current: FiberNode,
+	penddingProps: Props
+): FiberNode => {
+	let wip = current.alternate
+
+	if (wip === null) {
+		// mount
+		wip = new FiberNode(current.tag, penddingProps, current.key)
+		wip.stateNode = current.stateNode
+		wip.alternate = current
+		current.alternate = wip
+	} else {
+		wip.pengdingProps = penddingProps
+		wip.flags = NoFlags
+	}
+
+	wip.type = current.type
+	wip.updateQueue = current.updateQueue
+	wip.child = current.child
+	wip.memorizeProps = current.memorizeProps
+	wip.memorizeState = current.memorizeState
+
+	return wip
 }
