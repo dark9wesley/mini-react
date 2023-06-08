@@ -1,7 +1,38 @@
 import { FiberNode } from './fiber'
+import { UpdateQueue, processUpdateQueue } from './updateQueue'
+import { HostComponent, HostRoot, HostText } from './workTags'
 
 // 递归中的“递”阶段
-export const beginWork = (fiber: FiberNode) => {
+export const beginWork = (wip: FiberNode) => {
 	// 比较，返回子FiberNode
-	return fiber
+	// 比较子reactElement和current树Fiber，生成新的子Fiber
+	switch (wip.tag) {
+		case HostRoot:
+			return updateHostRoot(wip)
+		case HostComponent:
+			return
+		case HostText:
+			return
+		default:
+			if (__DEV__) {
+				console.warn('beginWork未实现的类型')
+			}
+	}
+
+	return wip
+}
+
+function updateHostRoot(wip: FiberNode) {
+	const baseState = wip.memorizeState
+	const updateQueue = wip.updateQueue as UpdateQueue<Element>
+	const pending = updateQueue.shared.pending
+	updateQueue.shared.pending = null
+	const { memorizedState } = processUpdateQueue(baseState, pending)
+	wip.memorizeState = memorizedState
+
+	const nextChildren = wip.memorizeState
+
+	// reconcilerChildren(wip, nextChildren)
+
+	return wip.child
 }
