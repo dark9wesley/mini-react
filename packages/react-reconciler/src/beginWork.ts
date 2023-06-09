@@ -10,9 +10,9 @@ export const beginWork = (wip: FiberNode) => {
 		case HostRoot:
 			return updateHostRoot(wip)
 		case HostComponent:
-			return
+			return updateHostComponent(wip)
 		case HostText:
-			return
+			return null
 		default:
 			if (__DEV__) {
 				console.warn('beginWork未实现的类型')
@@ -32,7 +32,14 @@ function updateHostRoot(wip: FiberNode) {
 
 	const nextChildren = wip.memorizeState
 
-	// reconcilerChildren(wip, nextChildren)
+	// reconcileChildren(wip, nextChildren)
 
+	return wip.child
+}
+
+function updateHostComponent(wip: FiberNode) {
+	const nextProps = wip.pengdingProps
+	const nextChildren = nextProps.children
+	// reconcileChildren(wip, nextChildren)
 	return wip.child
 }
