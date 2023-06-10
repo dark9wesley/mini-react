@@ -1,6 +1,8 @@
+import { ReactElement } from 'shared/ReactTypes'
 import { FiberNode } from './fiber'
 import { UpdateQueue, processUpdateQueue } from './updateQueue'
 import { HostComponent, HostRoot, HostText } from './workTags'
+import { mountChildFibers, reconcileChildFibers } from './childFiber'
 
 // 递归中的“递”阶段
 export const beginWork = (wip: FiberNode) => {
@@ -32,7 +34,7 @@ function updateHostRoot(wip: FiberNode) {
 
 	const nextChildren = wip.memorizeState
 
-	// reconcileChildren(wip, nextChildren)
+	reconcileChildren(wip, nextChildren)
 
 	return wip.child
 }
@@ -40,6 +42,18 @@ function updateHostRoot(wip: FiberNode) {
 function updateHostComponent(wip: FiberNode) {
 	const nextProps = wip.pengdingProps
 	const nextChildren = nextProps.children
-	// reconcileChildren(wip, nextChildren)
+	reconcileChildren(wip, nextChildren)
 	return wip.child
+}
+
+function reconcileChildren(wip: FiberNode, children?: ReactElement) {
+	const current = wip.alternate
+
+	if (current !== null) {
+		// update
+		wip.child = reconcileChildFibers(wip, current.child, children)
+	} else {
+		// mount
+		wip.child = mountChildFibers(wip, null, children)
+	}
 }
