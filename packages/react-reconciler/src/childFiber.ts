@@ -1,8 +1,32 @@
 import { ReactElement } from 'shared/ReactTypes'
-import { FiberNode } from './fiber'
+import { FiberNode, createFiberFromReactElement } from './fiber'
 import { REACT_ELEMENT } from 'shared/ReactSymbols'
+import { HostText } from './workTags'
 
 function ChildReconciler(shouldTrackEffect: boolean) {
+	function reconcileSingleElement(
+		returnFiber: FiberNode,
+		currentFiber: FiberNode | null,
+		element: ReactElement
+	) {
+		// 根据element创建fiber
+		const fiber = createFiberFromReactElement(element)
+		fiber.return = returnFiber
+
+		return fiber
+	}
+
+	function reconcileSingleTextNode(
+		returnFiber: FiberNode,
+		currentFiber: FiberNode | null,
+		content: string | number
+	) {
+		const fiber = new FiberNode(HostText, { content }, null)
+		fiber.return = returnFiber
+
+		return fiber
+	}
+
 	return function reconcileChildFibers(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
@@ -11,8 +35,7 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		if (typeof newChild === 'object' && newChild !== null) {
 			switch (newChild.$$typeof) {
 				case REACT_ELEMENT:
-					// return reconcileSingleElement()
-					return '1' as unknown as FiberNode
+					return reconcileSingleElement(returnFiber, currentFiber, newChild)
 				default:
 					if (__DEV__) {
 						console.warn('未实现的reconcile类型', newChild)
@@ -21,8 +44,18 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 			}
 		}
 
-		return null
 		// TODO 多节点情况
+
+		// HostText
+		if (typeof newChild === 'string' || typeof newChild === 'number') {
+			return reconcileSingleTextNode(returnFiber, currentFiber, newChild)
+		}
+
+		if (__DEV__) {
+			console.warn('未实现的reconcile类型', newChild)
+		}
+
+		return null
 	}
 }
 
