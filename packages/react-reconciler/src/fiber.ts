@@ -15,7 +15,7 @@ export class FiberNode {
 	index: number
 	ref: Ref
 
-	pengdingProps: Props
+	pendingProps: Props
 	memorizeProps: Props | null
 	memorizeState: any
 	alternate: FiberNode | null
@@ -41,7 +41,7 @@ export class FiberNode {
 		this.ref = null
 
 		// 工作单元相关的属性
-		this.pengdingProps = penddingProps
+		this.pendingProps = penddingProps
 		this.memorizeProps = null
 		this.memorizeState = null
 		this.alternate = null
@@ -77,7 +77,7 @@ export const createWorkInProgress = (
 		wip.alternate = current
 		current.alternate = wip
 	} else {
-		wip.pengdingProps = penddingProps
+		wip.pendingProps = penddingProps
 		wip.flags = NoFlags
 	}
 

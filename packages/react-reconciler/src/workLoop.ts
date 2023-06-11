@@ -53,7 +53,7 @@ function workLoop() {
 
 function performUnitOfWork(fiber: FiberNode) {
 	const next = beginWork(fiber)
-	fiber.memorizeProps = fiber.pengdingProps
+	fiber.memorizeProps = fiber.pendingProps
 
 	if (next === null) {
 		completeUnitOfFiber(fiber)

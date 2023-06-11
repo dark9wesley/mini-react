@@ -17,7 +17,7 @@ export const beginWork = (wip: FiberNode) => {
 			return null
 		default:
 			if (__DEV__) {
-				console.warn('beginWork未实现的类型')
+				console.warn('beginWork未实现的类型', wip)
 			}
 	}
 
@@ -40,7 +40,7 @@ function updateHostRoot(wip: FiberNode) {
 }
 
 function updateHostComponent(wip: FiberNode) {
-	const nextProps = wip.pengdingProps
+	const nextProps = wip.pendingProps
 	const nextChildren = nextProps.children
 	reconcileChildren(wip, nextChildren)
 	return wip.child
