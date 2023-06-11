@@ -2,6 +2,7 @@ import { ReactElement } from 'shared/ReactTypes'
 import { FiberNode, createFiberFromReactElement } from './fiber'
 import { REACT_ELEMENT } from 'shared/ReactSymbols'
 import { HostText } from './workTags'
+import { Placement } from './fiberFlags'
 
 function ChildReconciler(shouldTrackEffect: boolean) {
 	function reconcileSingleElement(
@@ -27,6 +28,13 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		return fiber
 	}
 
+	function placeSingleChild(fiber: FiberNode) {
+		if (shouldTrackEffect && fiber.alternate === null) {
+			fiber.flags |= Placement
+		}
+		return fiber
+	}
+
 	return function reconcileChildFibers(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
@@ -35,7 +43,9 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		if (typeof newChild === 'object' && newChild !== null) {
 			switch (newChild.$$typeof) {
 				case REACT_ELEMENT:
-					return reconcileSingleElement(returnFiber, currentFiber, newChild)
+					return placeSingleChild(
+						reconcileSingleElement(returnFiber, currentFiber, newChild)
+					)
 				default:
 					if (__DEV__) {
 						console.warn('未实现的reconcile类型', newChild)
@@ -48,7 +58,9 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 
 		// HostText
 		if (typeof newChild === 'string' || typeof newChild === 'number') {
-			return reconcileSingleTextNode(returnFiber, currentFiber, newChild)
+			return placeSingleChild(
+				reconcileSingleTextNode(returnFiber, currentFiber, newChild)
+			)
 		}
 
 		if (__DEV__) {
