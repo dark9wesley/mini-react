@@ -20,7 +20,9 @@ export class FiberNode {
 	memorizeState: any
 	alternate: FiberNode | null
 	flags: Flags
+	subtreeFlags: Flags
 	updateQueue: unknown
+
 	constructor(tag: WorkTag, penddingProps: Props, key: Key) {
 		this.tag = tag
 		this.key = key
@@ -47,6 +49,7 @@ export class FiberNode {
 		this.alternate = null
 		// 副作用
 		this.flags = NoFlags
+		this.subtreeFlags = NoFlags
 		this.updateQueue = null
 	}
 }
@@ -79,6 +82,7 @@ export const createWorkInProgress = (
 	} else {
 		wip.pendingProps = penddingProps
 		wip.flags = NoFlags
+		wip.subtreeFlags = NoFlags
 	}
 
 	wip.type = current.type

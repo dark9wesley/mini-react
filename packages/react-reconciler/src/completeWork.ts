@@ -5,6 +5,7 @@ import {
 } from 'hostConfig'
 import { FiberNode } from './fiber'
 import { HostComponent, HostRoot, HostText } from './workTags'
+import { NoFlags } from './fiberFlags'
 
 // 递归中的“归”阶段
 export const completeWork = (wip: FiberNode) => {
@@ -14,6 +15,7 @@ export const completeWork = (wip: FiberNode) => {
 
 	switch (wip.tag) {
 		case HostRoot:
+			bubbleProperties(wip)
 			return null
 		case HostComponent:
 			if (current !== null && wip.stateNode) {
@@ -25,6 +27,7 @@ export const completeWork = (wip: FiberNode) => {
 				appendAllChildren(instance, wip)
 				wip.stateNode = instance
 			}
+			bubbleProperties(wip)
 			return null
 		case HostText:
 			if (current !== null && wip.stateNode) {
@@ -33,6 +36,7 @@ export const completeWork = (wip: FiberNode) => {
 				const instance = createTextInstance(newProps.content)
 				wip.stateNode = instance
 			}
+			bubbleProperties(wip)
 			return null
 		default:
 			if (__DEV__) {
@@ -67,4 +71,19 @@ function appendAllChildren(parent: FiberNode, wip: FiberNode) {
 		node.sibling.return = node.return
 		node = node.return
 	}
+}
+
+function bubbleProperties(wip: FiberNode) {
+	let subtreeFlags = NoFlags
+	let child = wip.child
+
+	while (child !== null) {
+		subtreeFlags |= child.subtreeFlags
+		subtreeFlags |= child.flags
+
+		child.return = wip
+		child = child.sibling
+	}
+
+	wip.subtreeFlags |= subtreeFlags
 }
