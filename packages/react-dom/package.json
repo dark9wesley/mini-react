@@ -5,7 +5,7 @@
 	"module": "index.ts",
 	"devDependencies": {
 		"shared": "workspace:*",
-		"react-reconcilered": "workspace:*"
+		"react-reconciler": "workspace:*"
 	},
 	"peerDependencies": {
 		"react": "workspace:*"
