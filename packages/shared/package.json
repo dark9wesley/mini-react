@@ -2,6 +2,9 @@
 	"name": "shared",
 	"version": "1.0.0",
 	"description": "react公用辅助方法及类型定义",
+	"dependencies": {
+		"react": "workspace:*"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC"
