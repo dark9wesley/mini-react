@@ -114,6 +114,11 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 			)
 		}
 
+		// 兜底删除
+		if (currentFiber !== null) {
+			deleteChild(returnFiber, currentFiber)
+		}
+
 		if (__DEV__) {
 			console.warn('未实现的reconcile类型', newChild)
 		}
