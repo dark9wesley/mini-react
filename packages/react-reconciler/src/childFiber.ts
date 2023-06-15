@@ -63,9 +63,19 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		currentFiber: FiberNode | null,
 		content: string | number
 	) {
+		if (currentFiber !== null) {
+			// update
+			if (currentFiber.tag === HostText) {
+				// 类型没变
+				const existing = useFiber(currentFiber, { content })
+				existing.return = returnFiber
+				return existing
+			}
+			deleteChild(returnFiber, currentFiber)
+		}
+
 		const fiber = new FiberNode(HostText, { content }, null)
 		fiber.return = returnFiber
-
 		return fiber
 	}
 
