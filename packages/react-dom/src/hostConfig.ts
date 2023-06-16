@@ -44,3 +44,10 @@ export const commitTextUpdate = (
 ) => {
 	textInstance.textContent = content
 }
+
+export const removeChild = (
+	child: Instance | TextInstance,
+	container: Container
+) => {
+	container.removeChild(child)
+}
