@@ -1,6 +1,12 @@
-import { Container, appendChildToContainer } from 'hostConfig'
+import { Container, appendChildToContainer, commitUpdate } from 'hostConfig'
 import { FiberNode } from './fiber'
-import { MutationMask, NoFlags, Placement } from './fiberFlags'
+import {
+	ChildDeletion,
+	MutationMask,
+	NoFlags,
+	Placement,
+	Update
+} from './fiberFlags'
 import { HostComponent, HostRoot, HostText } from './workTags'
 
 let nextEffect: FiberNode | null = null
@@ -37,6 +43,11 @@ const commitMutationEffectsOnFiber = (finishedWork: FiberNode) => {
 	if ((flags & Placement) !== NoFlags) {
 		commitPlacement(finishedWork)
 		finishedWork.flags &= ~Placement
+	}
+
+	if ((flags & Update) !== NoFlags) {
+		commitUpdate(finishedWork)
+		finishedWork.flags &= ~Update
 	}
 }
 
