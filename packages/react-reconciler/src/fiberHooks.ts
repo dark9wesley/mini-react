@@ -27,6 +27,7 @@ export function renderWithHooks(wip: FiberNode) {
 
 	if (current !== null) {
 		//update
+		currentDispatcher.current = HookDispatcherOnUpdate
 	} else {
 		//mount时的hook实现
 		currentDispatcher.current = HookDispatcherOnMount
@@ -38,6 +39,10 @@ export function renderWithHooks(wip: FiberNode) {
 	// 重置
 	currentlyRenderingFiber = null
 	return children
+}
+
+const HookDispatcherOnUpdate: Dispatcher = {
+	useState: mountState
 }
 
 const HookDispatcherOnMount: Dispatcher = {
