@@ -2,11 +2,12 @@ import React, { useState } from 'react'
 import ReactDOM from 'react-dom/client'
 
 const App = () => {
-	const [num] = useState(100)
+	const [num, setNum] = useState(100)
+	window.setNum = setNum
 	return (
 		<div>
 			{/* <Child /> */}
-			{num}
+			{num === 3 ? <Child /> : num}
 		</div>
 	)
 }
