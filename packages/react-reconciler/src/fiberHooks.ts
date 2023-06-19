@@ -1,7 +1,11 @@
 import internals from 'shared/internals'
 import { FiberNode } from './fiber'
 import { Dispatch, Dispatcher } from 'react/src/currentDispatcher'
-import { UpdateQueue, createUpdateQueue } from './updateQueue'
+import {
+	UpdateQueue,
+	createUpdateQueue,
+	processUpdateQueue
+} from './updateQueue'
 import { createUpdate } from './updateQueue'
 import { enqueueUpdate } from './updateQueue'
 import { scheduleUpdateOnFiber } from './workLoop'
@@ -9,6 +13,7 @@ import { Action } from 'shared/ReactTypes'
 
 let currentlyRenderingFiber: FiberNode | null = null
 let workInProgressHook: Hook | null = null
+let currentHook: Hook | null = null
 
 interface Hook {
 	memorizedState: any
@@ -42,7 +47,7 @@ export function renderWithHooks(wip: FiberNode) {
 }
 
 const HookDispatcherOnUpdate: Dispatcher = {
-	useState: mountState
+	useState: updateState
 }
 
 const HookDispatcherOnMount: Dispatcher = {
@@ -71,6 +76,23 @@ function mountState<State>(
 	queue.dispatch = dispatch
 
 	return [memorizedState, dispatch]
+}
+function updateState<State>(
+	initialState: (() => State) | State
+): [State, Dispatch<State>] {
+	// 找到当前useState对应的hook数据
+	const hook = updateWorkInProgressHook()
+
+	// 计算新State的逻辑
+	const queue = hook.updateQueue as UpdateQueue<State>
+	const pending = queue.shared.pending
+
+	if (pending !== null) {
+		const { memorizedState } = processUpdateQueue(hook.memorizedState, pending)
+		hook.memorizedState = memorizedState
+	}
+
+	return [hook.memorizedState, queue.dispatch as Dispatch<State>]
 }
 
 function dispatchSetState<State>(
@@ -102,6 +124,53 @@ function mountWorkInProgressHook(): Hook {
 		// mount时，后续的hook
 		workInProgressHook.next = hook
 		workInProgressHook = hook
+	}
+
+	return workInProgressHook
+}
+
+function updateWorkInProgressHook(): Hook {
+	// TODO render阶段触发的更新
+	let nextCurrentHook: Hook | null = null
+
+	if (currentHook === null) {
+		// 这个FC组件Update时的第一个hook
+		const current = currentlyRenderingFiber?.alternate
+		if (current !== null) {
+			nextCurrentHook = current?.memorizeState
+		} else {
+			nextCurrentHook = null
+		}
+	} else {
+		// 这个FC组件Update时的后续hook
+		nextCurrentHook = currentHook.next
+	}
+
+	if (nextCurrentHook === null) {
+		throw new Error(
+			`组件${currentlyRenderingFiber?.type}本次执行hook与上一次不一致`
+		)
+	}
+
+	currentHook = nextCurrentHook as Hook
+
+	const newHook: Hook = {
+		memorizedState: currentHook.memorizedState,
+		updateQueue: currentHook.updateQueue,
+		next: null
+	}
+
+	if (workInProgressHook === null) {
+		if (currentlyRenderingFiber === null) {
+			throw new Error('请在函数组件内调用hook')
+		} else {
+			workInProgressHook = newHook
+			currentlyRenderingFiber.memorizeState = workInProgressHook
+		}
+	} else {
+		// mount时，后续的hook
+		workInProgressHook.next = newHook
+		workInProgressHook = newHook
 	}
 
 	return workInProgressHook
