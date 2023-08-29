@@ -78,7 +78,6 @@ export const createWorkInProgress = (
 	if (wip === null) {
 		// mount
 		wip = new FiberNode(current.tag, penddingProps, current.key)
-		wip.stateNode = current.stateNode
 		wip.alternate = current
 		current.alternate = wip
 	} else {
