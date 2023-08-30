@@ -80,6 +80,7 @@ export const createWorkInProgress = (
 		wip = new FiberNode(current.tag, penddingProps, current.key)
 		wip.alternate = current
 		current.alternate = wip
+		wip.stateNode = current.stateNode
 	} else {
 		wip.pendingProps = penddingProps
 		wip.flags = NoFlags

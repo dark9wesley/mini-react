@@ -12,6 +12,7 @@ import {
 	HostText
 } from './workTags'
 import { NoFlags, Update } from './fiberFlags'
+import { updateFiberProps } from 'react-dom/src/SyntheticEvent'
 
 function markUpdate(fiber: FiberNode) {
 	fiber.flags |= Update
@@ -31,6 +32,11 @@ export const completeWork = (wip: FiberNode) => {
 		case HostComponent:
 			if (current !== null && wip.stateNode) {
 				// update
+				// TODO 这里需要判断新旧props是否有变化
+				// 然后打上Update的tag
+				// 最后到commitUpdate中处理更新DOM
+				// 现在暂时直接调用updateFiberProps
+				updateFiberProps(wip.stateNode, newProps)
 			} else {
 				// 1. 构建DOM
 				const instance = createInstance(wip.type, newProps)
