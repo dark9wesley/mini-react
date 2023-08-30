@@ -22,33 +22,50 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		}
 	}
 
+	function deleteRemainingChildren(
+		returnFiber: FiberNode,
+		currentFirstChild: FiberNode | null
+	) {
+		if (!shouldTrackEffect) {
+			return
+		}
+		let childToDelete = currentFirstChild
+		while (childToDelete !== null) {
+			deleteChild(returnFiber, childToDelete)
+			childToDelete = childToDelete.sibling
+		}
+	}
+
 	function reconcileSingleElement(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
 		element: ReactElement
 	) {
 		const key = element.key
-		if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			if (currentFiber.key === key) {
 				// key相同
 				if (element.$$typeof === REACT_ELEMENT) {
 					if (currentFiber.type === element.type) {
-						//	type相同
-						// 可以复用
+						// type相同
 						const existing = useFiber(currentFiber, element.props)
 						existing.return = returnFiber
+						// 当前节点可复用, 需要标记剩余节点为删除
+						deleteRemainingChildren(returnFiber, currentFiber.sibling)
 						return existing
 					}
-					// 删掉旧的
-					deleteChild(returnFiber, currentFiber)
+					// key相同 type不同 删掉所有旧的
+					deleteRemainingChildren(returnFiber, currentFiber)
+					break
 				} else {
 					if (__DEV__) {
 						console.warn('还未实现的react类型')
 					}
 				}
 			} else {
-				// 删掉旧的
+				// key不同 删掉旧的 继续遍历剩余节点
 				deleteChild(returnFiber, currentFiber)
+				currentFiber = currentFiber.sibling
 			}
 		}
 		// 根据element创建fiber
@@ -63,15 +80,17 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		currentFiber: FiberNode | null,
 		content: string | number
 	) {
-		if (currentFiber !== null) {
+		while (currentFiber !== null) {
 			// update
 			if (currentFiber.tag === HostText) {
 				// 类型没变
 				const existing = useFiber(currentFiber, { content })
 				existing.return = returnFiber
+				deleteRemainingChildren(returnFiber, currentFiber.sibling)
 				return existing
 			}
 			deleteChild(returnFiber, currentFiber)
+			currentFiber = currentFiber.sibling
 		}
 
 		const fiber = new FiberNode(HostText, { content }, null)
