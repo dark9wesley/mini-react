@@ -227,11 +227,6 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 					return placeSingleChild(
 						reconcileSingleElement(returnFiber, currentFiber, newChild)
 					)
-				default:
-					if (__DEV__) {
-						console.warn('未实现的reconcile类型', newChild)
-					}
-					break
 			}
 
 			// 多节点情况
