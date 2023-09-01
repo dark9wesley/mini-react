@@ -244,7 +244,7 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 
 		// 兜底删除
 		if (currentFiber !== null) {
-			deleteChild(returnFiber, currentFiber)
+			deleteRemainingChildren(returnFiber, currentFiber)
 		}
 
 		if (__DEV__) {
