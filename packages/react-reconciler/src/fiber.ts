@@ -1,5 +1,5 @@
 import { Props, Key, ElementType, ReactElement } from 'shared/ReactTypes'
-import { FunctionComponent, HostComponent, WorkTag } from './workTags'
+import { Fragment, FunctionComponent, HostComponent, WorkTag } from './workTags'
 import { Ref } from 'shared/ReactTypes'
 import { Flags, NoFlags } from './fiberFlags'
 import { Container } from 'hostConfig'
@@ -26,7 +26,7 @@ export class FiberNode {
 
 	constructor(tag: WorkTag, penddingProps: Props, key: Key) {
 		this.tag = tag
-		this.key = key
+		this.key = key || null
 		this.stateNode = null
 		// 注意区分FiberNode里tag和type的区别
 		// tag：表明这个FiberNode是什么类型的Fiber
@@ -109,5 +109,10 @@ export function createFiberFromReactElement(element: ReactElement): FiberNode {
 
 	const fiber = new FiberNode(fiberTag, props, key)
 	fiber.type = type
+	return fiber
+}
+
+export function createFiberFromFragment(element: any[], key: Key): FiberNode {
+	const fiber = new FiberNode(Fragment, { children: element }, key)
 	return fiber
 }

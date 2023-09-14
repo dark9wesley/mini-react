@@ -1,10 +1,11 @@
 import { Props, ReactElement } from 'shared/ReactTypes'
 import {
 	FiberNode,
+	createFiberFromFragment,
 	createFiberFromReactElement,
 	createWorkInProgress
 } from './fiber'
-import { REACT_ELEMENT } from 'shared/ReactSymbols'
+import { REACT_ELEMENT, REACT_FRAGMENT } from 'shared/ReactSymbols'
 import { HostText } from './workTags'
 import { ChildDeletion, Placement } from './fiberFlags'
 
@@ -49,8 +50,12 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 				// key相同
 				if (element.$$typeof === REACT_ELEMENT) {
 					if (currentFiber.type === element.type) {
+						let props = element.props
+						if (element.type === REACT_FRAGMENT) {
+							props = element.props.children
+						}
 						// type相同
-						const existing = useFiber(currentFiber, element.props)
+						const existing = useFiber(currentFiber, props)
 						existing.return = returnFiber
 						// 当前节点可复用, 需要标记剩余节点为删除
 						deleteRemainingChildren(returnFiber, currentFiber.sibling)
@@ -71,7 +76,12 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 			}
 		}
 		// 根据element创建fiber
-		const fiber = createFiberFromReactElement(element)
+		let fiber
+		if (element.type === REACT_FRAGMENT) {
+			fiber = createFiberFromFragment(element.props.children, key)
+		} else {
+			fiber = createFiberFromReactElement(element)
+		}
 		fiber.return = returnFiber
 
 		return fiber
@@ -219,8 +229,19 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 	return function reconcileChildFibers(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
-		newChild?: ReactElement
+		newChild?: any
 	) {
+		// 判断Fragment
+		const isUnkeyedTopLevelFragment =
+			typeof newChild === 'object' &&
+			newChild !== null &&
+			newChild.type === REACT_FRAGMENT &&
+			newChild.key === null
+
+		if (isUnkeyedTopLevelFragment) {
+			newChild = newChild.props.children
+		}
+
 		if (typeof newChild === 'object' && newChild !== null) {
 			switch (newChild.$$typeof) {
 				case REACT_ELEMENT:
