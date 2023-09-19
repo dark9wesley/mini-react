@@ -225,6 +225,16 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 			}
 		}
 
+		if (Array.isArray(element)) {
+			return updateFragment(
+				returnFiber,
+				before,
+				element,
+				keyToUse,
+				existingChildren
+			)
+		}
+
 		return null
 	}
 
