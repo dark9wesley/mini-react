@@ -1,4 +1,4 @@
-import { Props, ReactElement } from 'shared/ReactTypes'
+import { Key, Props, ReactElement } from 'shared/ReactTypes'
 import {
 	FiberNode,
 	createFiberFromFragment,
@@ -184,7 +184,7 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		element: any
 	): FiberNode | null {
 		const keyToUse = element.Key ? element.Key : index
-		const before = existingChildren.get(keyToUse)
+		const before = existingChildren.get(keyToUse) || null
 
 		// HostText
 		if (typeof element === 'string' || typeof element === 'number') {
@@ -201,6 +201,15 @@ function ChildReconciler(shouldTrackEffect: boolean) {
 		if (typeof element === 'object' && element !== null) {
 			switch (element.$$typeof) {
 				case REACT_ELEMENT:
+					if (element.type === REACT_FRAGMENT) {
+						return updateFragment(
+							returnFiber,
+							before,
+							element,
+							keyToUse,
+							existingChildren
+						)
+					}
 					if (before) {
 						if (before.type === element.type) {
 							existingChildren.delete(keyToUse)
@@ -281,6 +290,24 @@ function useFiber(fiber: FiberNode, pendingProps: Props): FiberNode {
 	clone.index = 0
 	clone.sibling = null
 	return clone
+}
+
+function updateFragment(
+	returnFiber: FiberNode,
+	current: FiberNode | null,
+	elements: any[],
+	key: Key,
+	existingChildren: ExistingChildren
+) {
+	let fiber
+	if (!current || current.type !== REACT_FRAGMENT) {
+		fiber = createFiberFromFragment(elements, key)
+	} else {
+		existingChildren.delete(key)
+		fiber = useFiber(current, elements)
+	}
+	fiber.return = returnFiber
+	return fiber
 }
 
 export const reconcileChildFibers = ChildReconciler(true)
