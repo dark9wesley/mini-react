@@ -28,6 +28,6 @@ export function UpdateContainer(
 		hostRootFiber.updateQueue as UpdateQueue<ReactElement | null>,
 		update
 	)
-	scheduleUpdateOnFiber(hostRootFiber)
+	scheduleUpdateOnFiber(hostRootFiber, lane)
 	return element
 }

@@ -3,6 +3,7 @@ import { commitMutationEffects } from './commitWork'
 import { completeWork } from './completeWork'
 import { FiberNode, FiberRootNode, createWorkInProgress } from './fiber'
 import { MutationMask, NoFlags } from './fiberFlags'
+import { Lane, mergeLanes } from './fiberLanes'
 import { HostRoot } from './workTags'
 
 let workInProgress: FiberNode | null = null
@@ -11,9 +12,15 @@ function prepareFreshStack(root: FiberRootNode) {
 	workInProgress = createWorkInProgress(root.current, {})
 }
 
-export function scheduleUpdateOnFiber(fiber: FiberNode) {
+export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	const root = markUpdateFromFiberToRoot(fiber)
+	// 将本次更新的lane记录在FiberRootNode中
+	markRootUpdate(root, lane)
 	renderRoot(root)
+}
+
+export function markRootUpdate(root: FiberRootNode, lane: Lane) {
+	root.pendingLanes = mergeLanes(root.pendingLanes, lane)
 }
 
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
