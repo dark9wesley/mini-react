@@ -37,9 +37,9 @@ export function ensureRootIsScheduled(root: FiberRootNode) {
 		// 同步优先级，微任务调度
 		if (__DEV__) {
 			console.log('在微任务中调度, 优先级：', updateLane)
-			scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane))
-			scheduleMicroTask(flushSyncCallback)
 		}
+		scheduleSyncCallback(performSyncWorkOnRoot.bind(null, root, updateLane))
+		scheduleMicroTask(flushSyncCallback)
 	} else {
 		// 其他优先级，宏任务调度
 	}
