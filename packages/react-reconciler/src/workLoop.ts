@@ -9,15 +9,18 @@ import {
 	NoLane,
 	SyncLane,
 	getHighestPriorityLane,
+	markRootFinished,
 	mergeLanes
 } from './fiberLanes'
 import { HostRoot } from './workTags'
 import { flushSyncCallback, scheduleSyncCallback } from './syncTaskQueue'
 
 let workInProgress: FiberNode | null = null
+let wipRootRenderLane: Lane = NoLane
 
-function prepareFreshStack(root: FiberRootNode) {
+function prepareFreshStack(root: FiberRootNode, lane: Lane) {
 	workInProgress = createWorkInProgress(root.current, {})
+	wipRootRenderLane = lane
 }
 
 export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
@@ -74,7 +77,7 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 		return
 	}
 
-	prepareFreshStack(root)
+	prepareFreshStack(root, lane)
 
 	do {
 		try {
@@ -90,6 +93,8 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 
 	const finishedWork = root.current.alternate
 	root.finishedWork = finishedWork
+	root.finishedLane = lane
+	wipRootRenderLane = NoLane
 
 	commitRoot(root)
 }
@@ -105,8 +110,17 @@ function commitRoot(root: FiberRootNode) {
 		console.warn('commit阶段开始', finishedWork)
 	}
 
+	const lane = root.finishedLane
+
+	if (lane === NoLane && __DEV__) {
+		console.error('commit 阶段 finishedLane 不应该是 NoLane')
+	}
+
 	// 重置
 	root.finishedWork = null
+	root.finishedLane = NoLane
+
+	markRootFinished(root, lane)
 
 	// 判断是否存在三个字阶段需要执行的操作
 	const subtreeHasEffect =
@@ -133,7 +147,7 @@ function workLoop() {
 }
 
 function performUnitOfWork(fiber: FiberNode) {
-	const next = beginWork(fiber)
+	const next = beginWork(fiber, wipRootRenderLane)
 	fiber.memorizeProps = fiber.pendingProps
 
 	if (next === null) {

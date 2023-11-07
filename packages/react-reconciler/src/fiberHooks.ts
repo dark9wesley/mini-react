@@ -10,11 +10,12 @@ import { createUpdate } from './updateQueue'
 import { enqueueUpdate } from './updateQueue'
 import { scheduleUpdateOnFiber } from './workLoop'
 import { Action } from 'shared/ReactTypes'
-import { requestUpdateLanes } from './fiberLanes'
+import { Lane, NoLane, requestUpdateLanes } from './fiberLanes'
 
 let currentlyRenderingFiber: FiberNode | null = null
 let workInProgressHook: Hook | null = null
 let currentHook: Hook | null = null
+let renderLane: Lane = NoLane
 
 interface Hook {
 	memorizedState: any
@@ -24,10 +25,11 @@ interface Hook {
 
 const { currentDispatcher } = internals
 
-export function renderWithHooks(wip: FiberNode) {
+export function renderWithHooks(wip: FiberNode, lane: Lane) {
 	// 赋值
 	currentlyRenderingFiber = wip
 	wip.memorizeState = null
+	renderLane = lane
 
 	const current = wip.alternate
 
@@ -44,6 +46,7 @@ export function renderWithHooks(wip: FiberNode) {
 	const children = Component(props)
 	// 重置
 	currentlyRenderingFiber = null
+	renderLane = NoLane
 	return children
 }
 
@@ -78,6 +81,7 @@ function mountState<State>(
 
 	return [memorizedState, dispatch]
 }
+
 function updateState<State>(
 	initialState: (() => State) | State
 ): [State, Dispatch<State>] {
@@ -89,7 +93,11 @@ function updateState<State>(
 	const pending = queue.shared.pending
 
 	if (pending !== null) {
-		const { memorizedState } = processUpdateQueue(hook.memorizedState, pending)
+		const { memorizedState } = processUpdateQueue(
+			hook.memorizedState,
+			pending,
+			renderLane
+		)
 		hook.memorizedState = memorizedState
 	}
 
