@@ -30,6 +30,10 @@ export function scheduleUpdateOnFiber(fiber: FiberNode, lane: Lane) {
 	ensureRootIsScheduled(root)
 }
 
+export function markRootUpdate(root: FiberRootNode, lane: Lane) {
+	root.pendingLanes = mergeLanes(root.pendingLanes, lane)
+}
+
 // 调度阶段入口
 export function ensureRootIsScheduled(root: FiberRootNode) {
 	const updateLane = getHighestPriorityLane(root.pendingLanes)
@@ -46,10 +50,6 @@ export function ensureRootIsScheduled(root: FiberRootNode) {
 	} else {
 		// 其他优先级，宏任务调度
 	}
-}
-
-export function markRootUpdate(root: FiberRootNode, lane: Lane) {
-	root.pendingLanes = mergeLanes(root.pendingLanes, lane)
 }
 
 function markUpdateFromFiberToRoot(fiber: FiberNode) {
@@ -75,6 +75,10 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 		// NoLane
 		ensureRootIsScheduled(root)
 		return
+	}
+
+	if (__DEV__) {
+		console.warn('render阶段开始')
 	}
 
 	prepareFreshStack(root, lane)
