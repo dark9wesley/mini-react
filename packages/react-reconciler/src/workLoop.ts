@@ -3,7 +3,7 @@ import { beginWork } from './beginWork'
 import { commitMutationEffects } from './commitWork'
 import { completeWork } from './completeWork'
 import { FiberNode, FiberRootNode, createWorkInProgress } from './fiber'
-import { MutationMask, NoFlags } from './fiberFlags'
+import { MutationMask, NoFlags, PassiveEffect } from './fiberFlags'
 import {
 	Lane,
 	NoLane,
@@ -14,9 +14,14 @@ import {
 } from './fiberLanes'
 import { HostRoot } from './workTags'
 import { flushSyncCallback, scheduleSyncCallback } from './syncTaskQueue'
+import {
+	unstable_scheduleCallback as scheduleCallback,
+	unstable_NormalPriority as NormalPriority
+} from 'scheduler'
 
 let workInProgress: FiberNode | null = null
 let wipRootRenderLane: Lane = NoLane
+let rootDoesHasPassiveEffect = false
 
 function prepareFreshStack(root: FiberRootNode, lane: Lane) {
 	workInProgress = createWorkInProgress(root.current, {})
@@ -126,6 +131,23 @@ function commitRoot(root: FiberRootNode) {
 
 	markRootFinished(root, lane)
 
+	// 判断是否存在需要执行的副作用
+	if (
+		(finishedWork.flags & PassiveEffect) !== NoFlags ||
+		(finishedWork.subtreeFlags & PassiveEffect) !== NoFlags
+	) {
+		if (!rootDoesHasPassiveEffect) {
+			rootDoesHasPassiveEffect = true
+
+			// 调度副作用
+			scheduleCallback(NormalPriority, () => {
+				// 执行副作用
+
+				return
+			})
+		}
+	}
+
 	// 判断是否存在三个字阶段需要执行的操作
 	const subtreeHasEffect =
 		(finishedWork.subtreeFlags & MutationMask) !== NoFlags
@@ -134,7 +156,7 @@ function commitRoot(root: FiberRootNode) {
 	if (subtreeHasEffect || rootHasEffect) {
 		// beforeMutation
 		// mutation
-		commitMutationEffects(finishedWork)
+		commitMutationEffects(finishedWork, root)
 		// 切换fiber树
 		root.current = finishedWork
 		// layout
@@ -142,6 +164,9 @@ function commitRoot(root: FiberRootNode) {
 		// 切换fiber树
 		root.current = finishedWork
 	}
+
+	rootDoesHasPassiveEffect = false
+	ensureRootIsScheduled(root)
 }
 
 function workLoop() {
