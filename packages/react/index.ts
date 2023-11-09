@@ -7,6 +7,11 @@ export const useState: Dispatcher['useState'] = (initialState: any) => {
 	return dispatch.useState(initialState)
 }
 
+export const useEffect: Dispatcher['useEffect'] = (create, deps) => {
+	const dispatch = resolveDispatcher()
+	return dispatch.useEffect(create, deps)
+}
+
 // 内部数据共享层
 export const __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = {
 	currentDispatcher
