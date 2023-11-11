@@ -8,7 +8,15 @@ const App = () => {
 		<div>
 			{/* <Child /> */}
 			{/* {num === 3 ? <Child /> : num} */}
-			<div onClick={() => setNum(num + 1)}>{num}</div>
+			<div
+				onClick={() => {
+					setNum((num) => num + 1)
+					setNum((num) => num + 1)
+					setNum((num) => num + 1)
+				}}
+			>
+				{num}
+			</div>
 		</div>
 	)
 }
