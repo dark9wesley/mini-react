@@ -73,7 +73,7 @@ export function renderWithHooks(wip: FiberNode, lane: Lane) {
 
 const HookDispatcherOnUpdate: Dispatcher = {
 	useState: updateState,
-	useEffect: mountEffect
+	useEffect: updateEffect
 }
 
 const HookDispatcherOnMount: Dispatcher = {
@@ -93,6 +93,51 @@ function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
 		undefined,
 		nextDeps
 	)
+}
+
+function updateEffect(create: EffectCallback | void, deps: EffectDeps | void) {
+	// 找到当前useState对应的hook数据
+	const hook = updateWorkInProgressHook()
+	const nextDeps = deps === undefined ? null : deps
+	let destroy: EffectCallback | void
+
+	if (currentHook !== null) {
+		const prevEffect = currentHook.memorizedState as Effect
+		destroy = prevEffect.destroy
+
+		if (nextDeps !== null) {
+			// 浅比较
+			const prevDeps = prevEffect.deps
+			if (areHookInputsEqual(nextDeps, prevDeps)) {
+				hook.memorizedState = pushEffect(Passive, create, destroy, nextDeps)
+				return
+			}
+		}
+
+		// 浅比较 不相等
+		;(currentlyRenderingFiber as FiberNode).flags |= PassiveEffect
+		hook.memorizedState = pushEffect(
+			Passive | HookHasEffect,
+			create,
+			destroy,
+			nextDeps
+		)
+	}
+}
+
+function areHookInputsEqual(nextDeps: EffectDeps, prevDeps: EffectDeps) {
+	if (prevDeps === null || nextDeps === null) {
+		return false
+	}
+
+	for (let i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+		if (Object.is(prevDeps[i], nextDeps[i])) {
+			continue
+		}
+		return false
+	}
+
+	return true
 }
 
 function pushEffect(
