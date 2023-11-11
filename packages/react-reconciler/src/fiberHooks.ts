@@ -46,7 +46,10 @@ const { currentDispatcher } = internals
 export function renderWithHooks(wip: FiberNode, lane: Lane) {
 	// 赋值
 	currentlyRenderingFiber = wip
+	// 重置 hooks链表
 	wip.memorizeState = null
+	// 重置 effect链表
+	wip.updateQueue = null
 	renderLane = lane
 
 	const current = wip.alternate

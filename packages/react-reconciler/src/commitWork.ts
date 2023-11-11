@@ -9,6 +9,7 @@ import {
 import { FiberNode, FiberRootNode, PendingPassiveEffects } from './fiber'
 import {
 	ChildDeletion,
+	Flags,
 	MutationMask,
 	NoFlags,
 	PassiveEffect,
@@ -22,6 +23,7 @@ import {
 	HostText
 } from './workTags'
 import { Effect, FCUpdateQueue } from './fiberHooks'
+import { HookHasEffect } from './hookEffectTags'
 
 let nextEffect: FiberNode | null = null
 
@@ -300,4 +302,50 @@ function insertOrAppendPlacementNodeIntoContainer(
 			sibling = sibling.sibling
 		}
 	}
+}
+
+function commitHookEffectList(
+	flags: Flags,
+	lastEffect: Effect,
+	callback: (effect: Effect) => void
+) {
+	let effect = lastEffect.next as Effect
+	do {
+		if ((effect.tags & flags) === flags) {
+			callback(effect)
+		}
+		effect = effect.next as Effect
+	} while (effect !== lastEffect.next)
+}
+
+// 触发组件卸载的effect
+export function commitHookEffectListUnmount(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const destroy = effect.destroy
+		if (typeof destroy === 'function') {
+			destroy()
+		}
+		// 组件卸载后，不应该再执行组件内的effect
+		effect.tags &= ~HookHasEffect
+	})
+}
+
+// 触发组件上次更新的destroy effect
+export function commitHookEffectListDestroy(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const destroy = effect.destroy
+		if (typeof destroy === 'function') {
+			destroy()
+		}
+	})
+}
+
+// 触发组件这次更新的create effect
+export function commitHookEffectListCreate(flags: Flags, lastEffect: Effect) {
+	commitHookEffectList(flags, lastEffect, (effect) => {
+		const create = effect.create
+		if (typeof create === 'function') {
+			effect.destroy = create()
+		}
+	})
 }

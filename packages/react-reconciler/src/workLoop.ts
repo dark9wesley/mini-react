@@ -1,8 +1,18 @@
 import { scheduleMicroTask } from 'hostConfig'
 import { beginWork } from './beginWork'
-import { commitMutationEffects } from './commitWork'
+import {
+	commitHookEffectListCreate,
+	commitHookEffectListDestroy,
+	commitHookEffectListUnmount,
+	commitMutationEffects
+} from './commitWork'
 import { completeWork } from './completeWork'
-import { FiberNode, FiberRootNode, createWorkInProgress } from './fiber'
+import {
+	FiberNode,
+	FiberRootNode,
+	PendingPassiveEffects,
+	createWorkInProgress
+} from './fiber'
 import { MutationMask, NoFlags, PassiveEffect } from './fiberFlags'
 import {
 	Lane,
@@ -18,6 +28,7 @@ import {
 	unstable_scheduleCallback as scheduleCallback,
 	unstable_NormalPriority as NormalPriority
 } from 'scheduler'
+import { HookHasEffect, Passive } from './hookEffectTags'
 
 let workInProgress: FiberNode | null = null
 let wipRootRenderLane: Lane = NoLane
@@ -142,7 +153,7 @@ function commitRoot(root: FiberRootNode) {
 			// 调度副作用
 			scheduleCallback(NormalPriority, () => {
 				// 执行副作用
-
+				flushPassiveEffects(root.pendingPassiveEffects)
 				return
 			})
 		}
@@ -200,4 +211,21 @@ function completeUnitOfFiber(fiber: FiberNode) {
 		node = node.return
 		workInProgress = node
 	} while (node !== null)
+}
+
+function flushPassiveEffects(pendingPassiveEffects: PendingPassiveEffects) {
+	pendingPassiveEffects.unmount.forEach((effect) => {
+		commitHookEffectListUnmount(Passive, effect)
+	})
+	pendingPassiveEffects.unmount = []
+
+	pendingPassiveEffects.update.forEach((effect) => {
+		commitHookEffectListDestroy(Passive | HookHasEffect, effect)
+	})
+	pendingPassiveEffects.update.forEach((effect) => {
+		commitHookEffectListCreate(Passive | HookHasEffect, effect)
+	})
+	pendingPassiveEffects.update = []
+
+	flushSyncCallback()
 }
