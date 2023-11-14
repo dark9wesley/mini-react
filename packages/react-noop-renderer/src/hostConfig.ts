@@ -42,8 +42,8 @@ export const appendInitialChild = (
 	const prevParentID = child.parent
 	const parentID = 'rootID' in parent ? parent.rootID : parent.id
 
-	if (parentID !== -1 && parentID !== prevParentID) {
-		throw new Error('不能重复挂在Child')
+	if (prevParentID !== -1 && prevParentID !== parentID) {
+		throw new Error('不能重复挂载child')
 	}
 
 	child.parent = parentID
@@ -56,6 +56,8 @@ export const createTextInstance = (content: string) => {
 		id: instanceCounter++,
 		parent: -1
 	}
+
+	return instance
 }
 
 export const appendChildToContainer = (parent: Container, child: Instance) => {
