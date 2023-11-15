@@ -1,10 +1,11 @@
 import {
-	UpdateContainer,
+	updateContainer,
 	createContainer
 } from 'react-reconciler/src/fiberReconciler'
 import { Container, Instance } from './hostConfig'
 import { ReactElement } from 'shared/ReactTypes'
 import { REACT_ELEMENT, REACT_FRAGMENT } from 'shared/ReactSymbols'
+import * as Scheduler from 'scheduler'
 
 let idCounter = 0
 
@@ -59,7 +60,7 @@ export function createRoot() {
 			const children = child.map(childToJSX)
 
 			if (
-				child.every(
+				children.every(
 					(child) => typeof child === 'string' || typeof child === 'number'
 				)
 			) {
@@ -94,8 +95,9 @@ export function createRoot() {
 	}
 
 	return {
+		_Scheduler: Scheduler,
 		render(element: ReactElement) {
-			return UpdateContainer(element, root)
+			return updateContainer(element, root)
 		},
 		getChildren() {
 			return getChildren(container)

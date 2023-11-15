@@ -1,7 +1,7 @@
 // ReactDom.createRoot(container).render(<App />)
 
 import {
-	UpdateContainer,
+	updateContainer,
 	createContainer
 } from 'react-reconciler/src/fiberReconciler'
 import { Container } from './hostConfig'
@@ -14,7 +14,7 @@ export function createRoot(container: Container) {
 	return {
 		render(element: ReactElement) {
 			initEvent(container, 'click')
-			return UpdateContainer(element, root)
+			return updateContainer(element, root)
 		}
 	}
 }

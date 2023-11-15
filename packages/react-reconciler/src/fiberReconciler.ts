@@ -17,7 +17,7 @@ export function createContainer(container: Container) {
 	hostRootFiber.updateQueue = createUpdateQueue()
 	return root
 }
-export function UpdateContainer(
+export function updateContainer(
 	element: ReactElement | null,
 	root: FiberRootNode
 ) {
