@@ -64,7 +64,7 @@ export const appendChildToContainer = (parent: Container, child: Instance) => {
 	const prevParentID = child.parent
 
 	if (prevParentID !== -1 && prevParentID !== parent.rootID) {
-		throw new Error('不能重复挂在Child')
+		throw new Error('不能重复挂载child')
 	}
 
 	child.parent = parent.rootID
@@ -122,5 +122,5 @@ export const scheduleMicroTask =
 	typeof queueMicrotask === 'function'
 		? queueMicrotask
 		: typeof Promise === 'function'
-		? (callback: (...args: any) => void) => Promise.resolve().then(callback)
+		? (callback: (...args: any) => void) => Promise.resolve(null).then(callback)
 		: setTimeout
