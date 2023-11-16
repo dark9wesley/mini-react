@@ -10,8 +10,8 @@ import {
 	unstable_getFirstCallbackNode as getFirstCallbackNode,
 	unstable_cancelCallback as cancelCallback
 } from 'scheduler'
+import './style.css'
 
-const button = document.querySelector('button')
 const root = document.querySelector('#root')
 
 type Priority =
@@ -29,6 +29,27 @@ interface Work {
 const workList: Work[] = []
 let prevPriority: Priority = IdlePriority
 let curCallback: CallbackNode | null = null
+
+;[ImmediatePriority, UserBlockingPriority, NormalPriority, LowPriority].forEach(
+	(priority) => {
+		const btn = document.createElement('button')
+		root?.appendChild(btn)
+		btn.innerText = [
+			'',
+			'ImmediatePriority',
+			'UserBlockingPriority',
+			'NormalPriority',
+			'LowPriority'
+		][priority]
+		btn.onclick = () => {
+			workList.unshift({
+				count: 10,
+				priority: priority as Priority
+			})
+			schedule()
+		}
+	}
+)
 
 function schedule() {
 	const cbNode = getFirstCallbackNode()
@@ -65,7 +86,7 @@ function perform(work: Work, didTimeout?: boolean) {
 
 	while ((needSync || !shouldYield) && work.count) {
 		work.count--
-		insertDiv(work.count + '')
+		insertDiv(work.priority + '')
 	}
 
 	// 执行完 || 中断执行
@@ -96,14 +117,14 @@ function perform(work: Work, didTimeout?: boolean) {
 function insertDiv(content: string) {
 	const div = document.createElement('div')
 	div.innerText = content
+	div.className = `pri-${content}`
+	doSomeBusyWork(1000000)
 	root?.appendChild(div)
 }
 
-button &&
-	(button.onclick = () => {
-		workList.unshift({
-			count: 100,
-			priority: ImmediatePriority
-		})
-		schedule()
-	})
+function doSomeBusyWork(len: number) {
+	let result = 0
+	while (len--) {
+		result += len
+	}
+}
